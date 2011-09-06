@@ -1,0 +1,18 @@
+; $Id: jquery_slideshow.info,v 1.1.4.1 2009/06/24 18:08:34 spydor Exp $
+
+name = Jquery Slideshow
+description = "Create photo gallery slide shows using the cycle plugin for Jquery and imagefields"
+package = "User Interface"
+dependencies[] = jquery_plugin
+dependencies[] = imagecache
+dependencies[] = imagefield
+core = 6.x
+
+
+
+; Information added by drupal.org packaging script on 2009-07-24
+version = "6.x-1.2"
+core = "6.x"
+project = "jquery_slideshow"
+datestamp = "1248396363"
+

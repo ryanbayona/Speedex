@@ -1,0 +1,4 @@
+name = Speedex tracking module
+description = TODO: Description of module
+package = Speedex
+core = 6.x

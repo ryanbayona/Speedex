@@ -1,0 +1,199 @@
+<?php
+/**
+ * @file tracking.module
+ * TODO: Enter file description here.
+ */
+function tracking_menu(){
+  $items = array();
+  //handles online tracking
+  $items['tracker'] = array(
+    'title' => t("Waybill tracker"),
+    'description' => t(''),
+    'menu_name' => 'waybill tracker',
+    'page callback'   => 'tracker',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  
+  //handles sms tracking                                                                                                                                                            
+  //should not be accessible to front end users                                                                                                                                     
+  $items['tracker/sms']=array(                                                                                                                                                      
+    'title'           => t('SMS tracking/update'),                                                                                                                                  
+    'description'     => t('update using sms'),                                                                                                                                     
+    'menu_name'       => 'sms_tracker',                                                                                                                                             
+    'page callback'   => 'tracking_sms',                                                                                                                                            
+    'access arguments'=> array('access content'),                                                                                                                                   
+    'type'            => MENU_CALLBACK                                                                                                                                              
+                                                                                                                                                                                    
+  );                                                                                                                                                                                
+                                                                                                                                                                                    
+                                                                                                                                                                                    
+  return $items;                                                                                                                                                                    
+}                                                                                                                                                                                   
+
+//displays the new layout for tracking page
+function tracker(){
+
+    
+  //get waybill
+  if(array_key_exists('waybill',$_POST)){
+    $waybills = $_POST['waybill'];
+    $waybills = !empty($waybills) ? split(",",$waybills) : false;
+
+    if($waybills){
+    //validate waybills and get existing data from tracking_status table
+    //todo : status updating page
+    
+    //question : are awb and sr always unique?
+    //sr is sometimes null - where to get data
+    //equivalent field of client?
+    $waybill_records = db_query("SELECT distinct awb,sr,consignee,recvd_by FROM tracking WHERE awb 
+      IN (". db_placeholders($waybills,'varchar') .")
+    ",$waybills);
+    
+      
+      $output = "";
+      if(db_affected_rows($waybill_records) > 0){
+          $block   = module_invoke('block', 'block', 'view', 9);
+          $output .= $block['content'];
+      
+      
+          while($wr = db_fetch_object($waybill_records)){
+            $output .= _build_waybill_details($wr);
+          }
+          return $output;   
+      }
+    } 
+   return 'Nothing';
+  }
+  return 'Nothing';
+ 
+}
+
+//outputs the html layout for tracking
+//handle records not found, or no input specified
+function _build_waybill_details($wr){
+  $str  = "<div class='waybill-tracking'>";
+  
+  //outputs the header part
+  $str .= 
+    theme_table(
+      array('SR', 'WB', 'CLIENT', 'CONSIGNEE'),
+      array(array(is_null($wr->sr) ? '--' :$wr->sr,$wr->awb,$wr->recvd_by,$wr->consignee))
+  );
+    
+  //outputs the details part, details,etd,eta
+  $details = db_query("SELECT MAT_DESC,ETA,ETD from {tracking} where awb ='%s' ",$wr->awb);
+  if(db_affected_rows($details) > 0) {
+    $details_data =array();
+    $etd = false;
+    $eta = false;
+    while($detail = db_fetch_object($details)){
+      $details_data[] = $detail->MAT_DESC;
+      $etd = $detail->ETD;
+      $eta = $detail->ETA;
+    }
+    
+    
+    $str .= "<div class='waybill-tracking-details clearfix'>";
+    $str .= theme_item_list($details_data,'Details');
+    $str .= $etd ? "<span class='eta floatLeft'><span> ETD :</span>".date("m.d.Y",strtotime($etd))."</span>" : "" ;
+    $str .= $eta ? "<span class='eta floatRight'><span>ETA :</span>".date("m.d.Y",strtotime($eta))."</span>" : "" ;
+    $str .= "</div>";
+    
+  }
+  
+  
+  
+  
+  
+  //outputs the status part
+  $status  = db_query('SELECT * FROM {tracking_status} WHERE waybill = %d ORDER BY updated_on ASC',(int)$wr->awb);
+  $updates = array(array(array('data'=>'No status updates found.','colspan'=>4)));
+ 
+  if(db_affected_rows($status) > 0){
+    $records_found = db_affected_rows($status);
+    $updates= array();
+    while($s = db_fetch_object($status)){
+      
+      list($date,$time) = split(' ', date('m.d.Y h:iA',$s->updated_on));
+      $updates[] = array($date,$time,$s->status,$s->remarks);
+    }
+  }
+   
+  $str .= 
+    theme_table(
+      array('Date', 'Time', 'Activity', 'Remarks'),
+      $updates
+  );
+    
+  $str .= "</div>";  
+  return $str;
+}
+
+
+
+
+
+
+
+
+//handles the updating of waybill status via sms_tracker
+function tracking_sms(){  
+  if(isset($_POST['json'])){
+      $data = json_decode($_POST['json']);
+      $sms = preg_replace('/\s+/',' ',$data->TextDecoded);
+      list($type,$waybill,$status,$comment) = preg_split("/\s/",$sms,4);
+      $type = strtoupper($type);
+      $status = strtoupper($status);
+      $waybill_exists = _verify_waybill($waybill);
+      $valid_txn_code = in_array($type,array('UPDATE','INQUIRE')) === TRUE ? TRUE : FALSE;
+      $comment = empty($comment) ? '' :$comment;
+      $response = array('number'  => trim($data->SenderNumber));
+      if(preg_match('/^63/',$response['number'])){
+        $response['number'] = '+'.$response['number'];
+      }
+      
+      
+      if($waybill_exists && $valid_txn_code){
+        switch($type){
+          case "UPDATE":
+            db_query("
+              INSERT INTO {tracking_status} 
+              (waybill,status,updated_on,remarks,medium,uid) VALUES (%d,'%s',%d,'%s','m',1)", 
+              $waybill,$status,strtotime($data->ReceivingDateTime),$comment
+            );
+            $response['message'] = "Waybill #{$waybill} successfully updated.";
+            
+            //log this transaction
+          break;
+          case "INQUIRE":
+            
+            $q = db_query("SELECT * FROM {tracking_status} WHERE waybill=%d ORDER BY updated_on desc limit 1",$waybill);
+            if(db_affected_rows($q) > 0){
+              $inq = db_fetch_object($q);
+              //reformat message accordingly
+              $response['message'] = "Package status as of ".date('m.d.Y h:iA',$inq->updated_on)." : {$inq->status}";
+            }else{
+              $response['message'] = "Sorry, there are no updates found for waybill #{$waybill}";
+            }
+            
+          break;
+        }
+      }else if (!$waybill_exists){
+        $response['message'] = "Sorry, Airway bill #{$waybill} doesnt exists.";
+      }else if(!$valid_txn_code){
+        $response['message'] = "Invalid transaction code! Code should be INQUIRE for inquiries and UPDATE for waybill updates";  
+      }
+      echo json_encode($response);
+  }
+
+}
+
+
+//helper functions to verify if waybill exists
+//return true or false
+function _verify_waybill($wb){
+  $l = db_query('SELECT awb FROM tracking WHERE awb = "%s"',$wb);
+  return db_affected_rows($l) > 0 ? true : false;
+}

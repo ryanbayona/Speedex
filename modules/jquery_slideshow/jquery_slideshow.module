@@ -1,0 +1,199 @@
+<?php
+// $Id: jquery_slideshow.module,v 1.3.2.2 2009/07/24 00:34:21 spydor Exp $
+
+/**
+ * @file
+ * The main module file
+ */
+
+/**
+ * Implementation of hook_menu().
+ *
+ */
+function jquery_slideshow_menu() {
+   $items = array();
+    $items['admin/content/jquery-slideshows'] = array(
+      'title' => 'Jquery Slideshows',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('jquery_slideshow_admin'),
+      'access arguments' => array('configure jquery slideshow'),
+      'description' => 'Create jQuery-based slideshows from imagesfields.'
+    );
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function jquery_slideshow_perm() {
+  return array('configure jquery slideshow');
+}
+
+
+/**
+ *Implementation of hook_theme
+ *@author Lee Rowlands <leerowlands at rowlands-bcs dot com>
+ */
+function jquery_slideshow_theme() {
+    $theme = array();
+    foreach (_jquery_slideshow_get_presets() as $preset) {
+        $theme['jquery_slideshow_formatter_jqs__'. $preset] = array(
+            'arguments' => array('element' => NULL),
+            'function'  => 'theme_jquery_slideshow_formatter'
+        );
+    }
+    return $theme;
+}
+
+
+/**
+ * Base implementation of theme_jquery_slideshow
+ *
+ * @param array $element node element/field to style
+ * @author Lee Rowlands <leerowlands at rowlands-bcs dot com>
+ */
+function theme_jquery_slideshow_formatter($element) {
+    static $rendered;
+    if (!$rendered) {
+        $rendered = TRUE;
+        $formatter = $element['#formatter'];
+        $field_name = $element['#field_name'];
+        $item = $element['#item'];
+        $formatter = $element['#formatter'];
+        $nid = $element['#item']['nid'];
+        $node = node_load($element['#item']['nid']);;
+        $jq_slideshow_id = 'jq-slideshow-'. $nid .'-'. $field_name;
+        $output = '<div class="jquery_slideshow" id="'. $jq_slideshow_id .'">';
+        $dets = explode('__', $formatter);
+        $preset = $dets[1];
+        foreach ($node->{$field_name} as $image) {
+          $output .= theme('imagecache', $preset, $image['filepath'], $image['data']['alt'], $image['data']['title']);        
+        }
+        $output .= '</div>';
+        _jquery_slideshow_get_settings($jq_slideshow_id, $preset);
+        return $output;
+    }
+    
+}
+
+
+/**
+ * Implementation of hook_field_formatter_info().
+ */
+function jquery_slideshow_field_formatter_info() {
+    $formatters = array();
+    foreach (_jquery_slideshow_get_presets() as $preset) {
+        $formatters['jqs__'. $preset] = array(
+          'label' => t('JQuery Slideshow: '. $preset),
+          'field types' => array('image', 'filefield')
+        );
+    }
+    return $formatters;
+}
+
+
+function jquery_slideshow_admin() {
+  $form = array();
+
+  $form['jquery_slideshow_effect'] = array(
+    '#type' => 'select',
+    '#title' => t('Slideshow Effect'),
+    '#description' => t('Choose how you want the slide to transition.'),
+    '#options' => drupal_map_assoc(array('cover', 'fade', 'scrollDown', 'shuffle', 'toss', 'wipe', 'zoom')),
+    '#default_value' => variable_get('jquery_slideshow_effect', 'fade'),
+    );
+
+  $form['jquery_slideshow_speed'] = array(
+    '#type' => 'select',
+    '#title' => t('Transition Speed'),
+    '#description' => t('How fast do you want the transition to take (milliseconds).'),
+    '#options' => drupal_map_assoc(array(500, 1000, 1500, 2000)),
+    '#default_value' => variable_get('jquery_slideshow_speed', 500),
+    );
+
+  $form['jquery_slideshow_timeout'] = array(
+    '#type' => 'select',
+    '#title' => t('Timeout'),
+    '#description' => t('How long to pause on each photo (milliseconds).'),
+    '#options' => drupal_map_assoc(array(1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000)),
+    '#default_value' => variable_get('jquery_slideshow_timeout', 4000),
+    );
+
+  return system_settings_form($form);
+}
+
+function jquery_slideshow_admin_submit($form, &$form_state) {
+    $form_values = $form_state['values'];
+  variable_set('jquery_slideshow_imagecache_preset', $form_values['preset']);
+  variable_set('jquery_slideshow_effect', $form_values['effect']);
+  variable_set('jquery_slideshow_speed', $form_values['speed']);
+  variable_set('jquery_slideshow_timeout', $form_values['timeout']);
+  drupal_set_message(t('Jquery Slideshow settings have been saved'));
+}
+
+
+/**
+ *Gets javascript settings for slideshow and sets up Drupal behaviour
+ *
+ *@param string $jq_slideshow_id dom id of slideshow
+ *@param string $preset imagecache preset name
+ *
+ */
+function _jquery_slideshow_get_settings($jq_slideshow_id, $preset) {
+
+  jquery_plugin_add('cycle');
+
+  $data = _jquery_slideshow_get_actions($preset);
+
+  $script = "Drupal.behaviors.jquerySlideshow = function(){
+        $('.jquery_slideshow').css({height:'". $data['height'] ."px'});
+        $('.jquery_slideshow').css({width:'". $data['width'] ."px'});
+        $('#". $jq_slideshow_id ."').cycle({
+          fx: '". variable_get('jquery_slideshow_effect', 'fade') ."',
+          speed: ". variable_get('jquery_slideshow_speed', 500) .",
+          timeout: ". variable_get('jquery_slideshow_timeout', 4000) ."
+        });
+
+      }";
+  drupal_add_js($script, 'inline');
+}
+
+function _jquery_slideshow_get_presets() {
+
+  // Imagecache 1.x
+  if (function_exists('_imagecache_get_presets'))
+    return _imagecache_get_presets();
+
+  // Imagecache 2.x
+  if (function_exists('imagecache_presets')) {
+    $presets = imagecache_presets();
+    $presetlist = array();
+    foreach ($presets as $key => $value) {
+        $presetlist[] = $value['presetname'];
+    }
+    return $presetlist;
+  }
+
+}
+
+function _jquery_slideshow_get_actions($preset) {
+
+  $data = array();
+
+  // Imagecache 1.x
+  if (function_exists('_imagecache_actions_get_by_presetid')) {
+    $presetid = array_search($preset, _jquery_slideshow_get_presets());
+    $presets = _imagecache_actions_get_by_presetid($presetid);
+    $data['height'] = $presets[$presetid-1]['data']['height'];
+    $data['width'] = $presets[$presetid-1]['data']['width'];
+  }
+
+  // Imagecache 2.x
+  if (function_exists('imagecache_presets')) {
+    $preset = imagecache_preset_by_name($preset);
+    $data['width'] = $preset['actions'][0]['data']['width'];
+    $data['height'] = $preset['actions'][0]['data']['height'];
+  }
+  return $data;
+
+}

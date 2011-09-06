@@ -1,0 +1,20 @@
+<?php
+// $Id: jquery_slideshow.install,v 1.1.4.1 2009/06/24 18:08:34 spydor Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function jquery_slideshow_install() {
+}
+
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function jquery_slideshow_uninstall() {
+  // Delete variables.
+  variable_del('jquery_slideshow_imagecache_preset');
+  variable_del('jquery_slideshow_effect');
+  variable_del('jquery_slideshow_speed');
+  variable_del('jquery_slideshow_timeout');
+}
