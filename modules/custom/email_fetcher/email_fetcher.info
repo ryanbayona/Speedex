@@ -1,0 +1,4 @@
+name = Speedex email fetcher module
+description = Fetches email from bluehost mail server
+package = Speedex
+core = 6.x

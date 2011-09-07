@@ -1,0 +1,57 @@
+<?php
+/**
+ * @file tracking.module
+ * TODO: Enter file description here.
+ */
+function email_fetcher_menu(){
+  $items = array();
+  //the url that gets called when running cron 
+  $items['email/fetch'] = array(
+    'title' => t("Fetch email"),        
+    'page callback'   => 'fetch_email',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+                                                                                                                                                                                    
+  return $items;                                                                                                                                                                    
+}  
+
+/**
+  This is the program that will fetch emails from bluehost mail servers.
+  It should run every 30 seconds in order to check incoming mail. (cron)
+  
+  Loop through each new image and detect the following
+    Sender (if valid or not, mobile phone number should be registered on the site to avoid spam mail)
+    Body attached PDF
+    Subject <Waybill number>  - <receipient name>
+    Date ??
+  Flag the email as read
+  Where to store received POD image?
+  Naming convention  
+
+
+*/
+
+function fetch_email(){
+// $hostname = '{box558.bluehost.com:993/imap/ssl}';
+//
+  
+
+$hostname = 'box558.bluehost.com';
+  $username = 'tracking@myspeedex.net';
+  $password = 'connect123';
+ include_once 'imap/Imap.class.php';
+  $imap = new Imap($hostname,$username,$password,"INBOX",993,"imap/ssl");
+var_dump($imap->get_is_connected());
+echo "<pre>";
+// print_r($imap->returnImapMailBoxmMsgInfoObj());
+// // print_r($imap->returnImapHeadersArr());
+// print_r($imap->returnMailboxListArr());
+// print_r($imap->returnMailBoxHeaderArr());
+// print_r($imap->returnEmailHeaderArr(3));
+print_r($imap->returnEmailMessageArr(6));
+
+//count the number of motherfucking parts
+echo $imap->saveAttachment(8,2,'/var/www/attachments/x'.md5('14'.date('Y-m-d H:i:s')));
+echo "</pre>";
+}

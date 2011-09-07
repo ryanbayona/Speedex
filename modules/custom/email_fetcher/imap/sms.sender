@@ -1,0 +1,56 @@
+stdClass Object
+(
+    [type] => 1
+    [encoding] => 0
+    [ifsubtype] => 1
+    [subtype] => MIXED
+    [ifdescription] => 0
+    [ifid] => 0
+    [ifdisposition] => 0
+    [ifdparameters] => 0
+    [ifparameters] => 1
+    [parameters] => Array
+        (
+            [0] => stdClass Object
+                (
+                    [attribute] => boundary
+                    [value] => 1_4E5E582C_27E2B950
+                )
+
+        )
+
+    [parts] => Array
+        (
+            [0] => stdClass Object
+                (
+                    [type] => 5
+                    [encoding] => 3
+                    [ifsubtype] => 1
+                    [subtype] => JPEG
+                    [ifdescription] => 0
+                    [ifid] => 0
+                    [bytes] => 127060
+                    [ifdisposition] => 0
+                    [ifdparameters] => 0
+                    [ifparameters] => 1
+                    [parameters] => Array
+                        (
+                            [0] => stdClass Object
+                                (
+                                    [attribute] => Filename
+                                    [value] => ryevhelkbjc0805.jpg
+                                )
+
+                            [1] => stdClass Object
+                                (
+                                    [attribute] => Name
+                                    [value] => ryevhelkbjc0805.jpg
+                                )
+
+                        )
+
+                )
+
+        )
+
+)
