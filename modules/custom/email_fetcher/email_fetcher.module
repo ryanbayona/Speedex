@@ -33,9 +33,7 @@ function email_fetcher_menu(){
 */
 
 function fetch_email(){
-
   include_once 'imap/Imap.class.php';  
-
   $hostname = 'box558.bluehost.com';
   $username = 'tracking@myspeedex.net';
   $password = 'connect123';
@@ -47,7 +45,7 @@ function fetch_email(){
     //determine if there are new messages
     $unseen = imap_search($imap->get_stream(),"UNSEEN");
     
-    if($unseen){
+    if($unseen && is_array($unseen)){
       foreach($unseen as $k=>$message_id){
         $email = $imap->returnEmailMessageArr($message_id);
         $e = email_fetcher_validate($email);
@@ -63,7 +61,7 @@ function fetch_email(){
               $e['waybill'],"RECEIVED",$e['date'],!empty($e['recipient']) ? "Received by : ".$e['recipient'] : "Recipient not specified"
           );
           
-          $imap->saveAttachment($message_id,$email['attachments'][0]['part'],$pod_path.$way);
+          $imap->saveAttachment($message_id,$email['attachments'][0]['part'],$pod_path.$e['waybill']);
         }
       }
         
@@ -72,8 +70,6 @@ function fetch_email(){
 
   }
   
-
-
 }
 
 /**
@@ -101,7 +97,11 @@ function email_fetcher_validate($email){
     
     //sender
     //TODO : validate sender against db of registered users
-    list($number,$domain) = split("@",$email['header']['from']);
+//     $email['header']['sender']  =  $email['header']['sender'] == "ryanbayona@gmail.com" ? "639178012783@myglobe.com.ph" : $email['header']['sender'];
+//     $email['header']['subject'] =  $email['header']['subject'] == "FW:Test" ? "3733241 - Juan Tamad" : $email['header']['subject'];
+
+    
+    list($number,$domain) = split("@",$email['header']['sender']);
     $valid_number = preg_match("/[0-9]/",trim($number));
     
     list($waybill,$recipient) = split("-",$email['header']['subject']);
