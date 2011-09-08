@@ -33,25 +33,98 @@ function email_fetcher_menu(){
 */
 
 function fetch_email(){
-// $hostname = '{box558.bluehost.com:993/imap/ssl}';
-//
-  
 
-$hostname = 'box558.bluehost.com';
+  include_once 'imap/Imap.class.php';  
+
+  $hostname = 'box558.bluehost.com';
   $username = 'tracking@myspeedex.net';
   $password = 'connect123';
- include_once 'imap/Imap.class.php';
+  $pod_path = $_SERVER['DOCUMENT_ROOT']."/sites/default/files/pod/";
+ 
   $imap = new Imap($hostname,$username,$password,"INBOX",993,"imap/ssl");
-var_dump($imap->get_is_connected());
-echo "<pre>";
-// print_r($imap->returnImapMailBoxmMsgInfoObj());
-// // print_r($imap->returnImapHeadersArr());
-// print_r($imap->returnMailboxListArr());
-// print_r($imap->returnMailBoxHeaderArr());
-// print_r($imap->returnEmailHeaderArr(3));
-print_r($imap->returnEmailMessageArr(6));
+  if($imap->get_is_connected()){
+    
+    //determine if there are new messages
+    $unseen = imap_search($imap->get_stream(),"UNSEEN");
+    
+    if($unseen){
+      foreach($unseen as $k=>$message_id){
+        $email = $imap->returnEmailMessageArr($message_id);
+        $e = email_fetcher_validate($email);
+        
+        if($e){
+          
+          //valid details, so add records to the tracking table
+          //this should be on the tracking module!                    
 
-//count the number of motherfucking parts
-echo $imap->saveAttachment(8,2,'/var/www/attachments/x'.md5('14'.date('Y-m-d H:i:s')));
-echo "</pre>";
+          db_query("
+              INSERT INTO {tracking_status} 
+              (waybill,status,updated_on,remarks,medium,uid) VALUES (%d,'%s',%d,'%s','m',1)", 
+              $e['waybill'],"RECEIVED",$e['date'],!empty($e['recipient']) ? "Received by : ".$e['recipient'] : "Recipient not specified"
+          );
+          
+          $imap->saveAttachment($message_id,$email['attachments'][0]['part'],$pod_path.$way);
+        }
+      }
+        
+    }
+    
+
+  }
+  
+
+
 }
+
+/**
+  checks the email message for the following 
+  FROM 
+    number should be registered with speedex to avoid spam
+    message should come from a phone by checking the FROM field only contains number
+    
+    
+  SUBJECT
+    has WAYBILL NUMBER and RECIPIENT separated by "-" (dash)
+    WAYBILL number must exist on the database
+    
+    
+  ATTACHMENT
+    should have attachments
+ 
+add facility to handle erroneous mails
+
+*/
+
+function email_fetcher_validate($email){
+
+  if(!empty($email)){
+    
+    //sender
+    //TODO : validate sender against db of registered users
+    list($number,$domain) = split("@",$email['header']['from']);
+    $valid_number = preg_match("/[0-9]/",trim($number));
+    
+    list($waybill,$recipient) = split("-",$email['header']['subject']);
+    $valid_waybill = true ; //_verify_waybill((int)$waybill);
+    
+    //TODO : check date compatibility
+    $date = strtotime($email['header']['date']);
+    
+    $has_attachment = array_key_exists('attachments',$email);
+    
+    if($valid_number && $valid_waybill && $has_attachment){
+      return array(
+        'number'  => $number,
+        'recipient' => trim($recipient),
+        'waybill' => trim($waybill),
+        'date'   => $date
+      );
+    
+    }
+    return false;
+  
+  }
+  return false;
+}
+
+

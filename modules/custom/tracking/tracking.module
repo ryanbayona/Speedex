@@ -26,8 +26,6 @@ function tracking_menu(){
     'type'            => MENU_CALLBACK                                                                                                                                              
                                                                                                                                                                                     
   );                                                                                                                                                                                
-                                                                                                                                                                                    
-                                                                                                                                                                                    
   return $items;                                                                                                                                                                    
 }                                                                                                                                                                                   
 
@@ -101,6 +99,9 @@ function _build_waybill_details($wr){
     $str .= $eta ? "<span class='eta floatRight'><span>ETA :</span>".date("m.d.Y",strtotime($eta))."</span>" : "" ;
     $str .= "</div>";
     
+   
+    
+    
   }
   
   
@@ -127,6 +128,16 @@ function _build_waybill_details($wr){
       $updates
   );
     
+ 
+  
+  
+   $file ="sites/default/files/pod/{$wr->awb}.jpg";
+   if(file_exists($file)){
+      $str .= "<div class='pod'>";
+      $str .= l("Click to see Proof of Delivery (MMS)",$file,array('attributes' => array('rel'=>"lightbox",'class' => 'speedex-orange')));
+      $str .= "</div>";
+   }
+  
   $str .= "</div>";  
   return $str;
 }

@@ -213,7 +213,7 @@ class Imap
 	public function saveAttachment($messageNumber,$part,$saveToFile)
 	{
 		$arr = $this->returnEmailMessageArr($messageNumber,1);
-		print_r($arr);
+		
 		if(is_array($arr['attachments']))
 		{
 			foreach($arr['attachments'] as $i){
@@ -301,6 +301,7 @@ class Imap
 	 * @return array
 	 */
 	private function returnImapHeadersArr(){
+    
 		return imap_headers($this->stream);
 	}
 	
