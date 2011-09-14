@@ -1,0 +1,243 @@
+<?php
+function filemanager_init(){
+  if(preg_match('/admin/',$_SERVER['REQUEST_URI'])){
+    drupal_add_js(drupal_get_path('module','filemanager').'/filemanager.js');     
+  }
+ 
+}
+
+function filemanager_menu(){
+  $items = array();
+  
+  //handles online tracking
+  $items['admin/file/actions'] = array(    
+    'page callback'   => 'filemanager_actions',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  
+  return $items;                                                                                                                                                                    
+}        
+
+function filemanager_form_alter(&$form,$form_state,$form_id){
+
+  global $user;  
+  $roles = $user->roles;
+  count($roles) > 1 ? array_shift($roles) : false;
+  $role = ucfirst(array_shift($roles));
+  if($form_id == "file_node_form"){
+    $form['title']['#value'] = "{$role} - ".date("dMY-His");
+    $form['title']['#type'] = "hidden";
+  }
+}
+function filemanager_actions(){
+  //detect post submissions
+  //optimize
+  if(!empty($_POST)){
+    $type= $_POST['type'];
+    //customize error response
+    $nids = array();
+    foreach($_POST['nid'] as $k => $nid){
+      $nids[]=(int)$nid;
+    }
+    
+  echo  $message = $type == 'delete' ? filemanager_delete($nids) : filemanager_process($nids);
+    
+  }
+}
+function filemanager_delete($nids){
+  if(!empty($nids)){
+    foreach($nids as $id){
+      node_delete($id);
+    }
+    return json_encode(array('status' => true,'message'=> 'The files you selected have been deleted'));
+  }
+}
+
+
+function filemanager_process($nids){
+  if(!empty($nids)){
+    
+    
+    //get filename related to this;
+    $fileq = db_query("SELECT filepath,fid FROM {files} 
+    WHERE fid in (SELECT field_file_csv_fid as fid FROM content_type_file where nid in (". db_placeholders($nids,"int") ."))",$nids);
+    
+    if(db_affected_rows() > 0){
+      while($o =db_fetch_object($fileq)){
+        $file = fopen($o->filepath,"r");
+        if($file !== FALSE){
+          $i = 0;
+          $fields = array();
+          $ar=array();
+          while(($data = fgetcsv($file,1000,",")) !== FALSE){
+            
+            if($i ==0){  
+                //convert the first row of csv file to uppercase and replace unwanted characters
+                $fields = array(); 
+                foreach($data as $key => $val){
+                  $fields[$key]= strtoupper(str_replace(array(' ','.'),array('_',''),$val));
+                } 
+            }else{
+                //collects all data and aligns them to their respective fields
+                foreach($data as $key => $val){
+                  $ar[$i][$fields[$key]] =$val;
+                }        
+            }
+            $i++;
+          }
+        }
+        !empty($ar) ? update_records($ar) : false;
+      }
+      return json_encode(array('status' => true,'message' => "The files you selected were processed successfully"));
+    }
+  }
+  return json_encode(array('status' => false,'message'=> 'Error. Unable to process selected files'));
+  
+  
+}
+//convert data 
+function update_records($data){
+  if(!empty($data)){
+     global $user;
+     foreach($data as $key => $val){
+        
+        if (isset($val['DATE_EMAIL']))  $val['DATE_EMAIL']  = todate($val['DATE_EMAIL']);
+        if (isset($val['ETD']))         $val['ETD']         = todate($val['ETD']);
+        if (isset($val['ETA']))         $val['ETA']         = todate($val['ETA']);
+        if (isset($val['ACTUAL_DATE'])) $val['ACTUAL_DATE'] = todate($val['ACTUAL_DATE']);
+        if (isset($val['DATE_RCVD']))   $val['DATE_RCVD']   = todate($val['DATE_RCVD']);
+        if (isset($val['CREATED_ON']))  $val['DATE_OUT']    = todate($val['CREATED_ON']);
+        
+        //convert csv fieldnames to equivalent table column
+        //sets new fieldname and removes the old one
+        $mappings = array(
+         'WCNAME'       => 'consignee',
+         'WAYBILL#'     => 'AWB',
+         'WBILL'        => 'AWB',
+         'WB#'          => 'AWB',
+         'MATDESC'      => 'MAT_DESC',
+         'DATE_RLS'     => 'DATE_OUT',
+         'MATERIAL'     => 'MATCODE',
+         'DR_#'         =>'GMF',
+         'DESCRIPTION'  => 'MAT_DESC',
+         'CONFIRM_QTY'  =>  'QTY',
+         'PURCHASE_ORDER_NO'=> 'PO',
+         'NAME_1'       =>  'CONSIGNEE',
+         'SD_DOC'       =>  'RO',
+         'RECEIVED_BY'  => 'RECVD_BY',
+        );
+        
+        foreach($mappings as $old => $new){  process_field(&$val,$old,$new);   }
+       
+        if (isset($val['DATE_OUT']))    $val['DATE_OUT']    = todate($val['DATE_OUT']);
+        
+        
+        if (in_array("smart",$user->roles) === TRUE){
+
+          $awb = $val['AWB'];   
+          $val['customer_id'] = 4;
+
+          $matcode = isset($val['MATCODE']) ? $val['MATCODE'] : "";
+          $qty     = isset($val['QTY'])    ? $val['QTY']     : 0 ;
+
+          if (has('RNSS',  $val)) $val['DATA_TYPE'] = 'RNSS';
+          if (has('RSLOC', $val)) $val['DATA_TYPE'] = 'WIRELESS';
+          if (has('SD_DOC',$val)) $val['DATA_TYPE'] = 'RD_PD';
+
+          
+          $result = db_fetch_array(
+            db_query(
+              "SELECT idno FROM {tracking} WHERE
+                awb     = '%s' AND
+                MATCODE = '%s' AND
+                qty     = '%s' 
+                ".(isset($val['GMF']) ?  " AND GMF  = '%s' " : ""  )."
+                ".(isset($val['RNSS']) ? " AND RNSS = '%s' " : ""  )
+              ,$awb,$matcode,$qty, $val['GMF'],$val['RNSS'])   
+          );          
+          
+        } else {
+          $awb = $val['AWB'];
+          $result = db_fetch_array(
+            db_query("SELECT idno FROM {tracking} WHERE awb = '%s'",$awb)
+          );
+        }
+        
+        $fields   = array();
+        $args = array_values($val);
+        foreach($val as $fieldname => $fieldval){
+            $fields[] = "{$fieldname} = '%s'";
+        }
+        if ($result){
+          if (in_array('smart',$user->roles)){
+            $args[count($args)] = $result['idno'];
+            db_query("UPDATE {tracking} SET ". join(",",$fields) ." WHERE idno = %d ",$args);
+          }else{
+            list($val['eta'], $val['etd']) = set_eta($val['DATE_OUT'], $val['AREAS']);
+            $args[count($args)] = $result['AWB'];
+            db_query("UPDATE {tracking} SET ". join(",",$fields) ." WHERE awb = '%s' ",$args);
+            
+          }
+          
+          $id = $result['idno'];
+          $action = "update";
+          $history_action = "Process: update";
+          //$this->history_save($history_action, $id, $val);
+          
+          //TODO LOGGING
+
+        }else{
+
+          if (in_array('smart',$user->roles) ===  TRUE){
+            db_query("INSERT INTO {tracking} SET ". join(",",$fields) ."",$args);
+            
+            $action = "add";
+//             $id = $this->db->insert_id();
+//             $history_action = "Process: add";
+//             $this->history_save($history_action, $id, $val);
+
+          }
+        }
+        
+      }
+   
+  }
+}
+function set_eta($date, $area){
+  list($y, $m, $d) = explode('-', $date);
+  switch ($area){
+    case 'NCR':
+      $d = (int)$d + 1;
+    break;
+    case 'LUZON':
+      $d = (int)$d + 2;
+    break;
+    case 'MIN':
+    case 'VIZ':
+      $d = (int)$d + 4;
+    break;
+  }
+  $eta = "$y-$m-$d";
+  $etd = "$y-$m-$d";
+
+  return array($eta, $etd);
+}
+
+
+function process_field(&$array,$orig_name,$new_name){
+ if (isset($array[$orig_name])){ 
+    $array[$new_name] = $array[$orig_name];        
+    unset($array[$orig_name]);
+  }
+}
+function has($key,$array){
+   
+   return array_key_exists($key,$array);
+   
+   
+}
+//converts given date to yyyy-mm-dd
+function todate($str){
+  return date("Y-m-d", strtotime($str));
+}

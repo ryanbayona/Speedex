@@ -1,0 +1,4 @@
+name = Speedex filemanager module
+description = handles uploading , deletion and processing of csv files uploaded by admin users
+package = Speedex
+core = 6.x

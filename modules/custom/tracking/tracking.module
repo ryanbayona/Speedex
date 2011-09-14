@@ -35,7 +35,7 @@ function tracker(){
     
   //get waybill
   if(array_key_exists('waybill',$_POST)){
-    $waybills = $_POST['waybill'];
+    $waybills = trim($_POST['waybill']);
     $waybills = !empty($waybills) ? split(",",$waybills) : false;
 
     if($waybills){
@@ -62,9 +62,11 @@ function tracker(){
           return $output;   
       }
     } 
-   return 'Nothing';
+   return 'No records found';
   }
-  return 'Nothing';
+  $block   = module_invoke('block', 'block', 'view', 9);
+  return  $block['content'];
+  
  
 }
 

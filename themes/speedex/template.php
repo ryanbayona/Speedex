@@ -51,11 +51,11 @@ function speedex_preprocess(&$vars, $hook) {
  * @param $hook
  *   The name of the template being rendered ("page" in this case.)
  */
-/* -- Delete this line if you want to use this function
+
 function speedex_preprocess_page(&$vars, $hook) {
-  $vars['sample_variable'] = t('Lorem ipsum.');
+   $vars['title'] = $vars['title']  == "Create File" ? "Upload CSV file" : $vars['title'] ;
 }
-// */
+
 
 /**
  * Override or insert variables into the node templates.

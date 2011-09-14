@@ -1,7 +1,8 @@
 <?php
 /**
  * @file tracking.module
- * TODO: Enter file description here.
+ * TODO: CLOSE transaction if there is a POD already
+ * TODO: REPLY to sender of POD about status
  */
 function email_fetcher_menu(){
   $items = array();
@@ -22,7 +23,7 @@ function email_fetcher_menu(){
   
   Loop through each new image and detect the following
     Sender (if valid or not, mobile phone number should be registered on the site to avoid spam mail)
-    Body attached PDF
+    Body attached image
     Subject <Waybill number>  - <receipient name>
     Date ??
   Flag the email as read
@@ -36,6 +37,10 @@ function fetch_email(){
   include_once 'imap/Imap.class.php';  
   $hostname = 'box558.bluehost.com';
   $username = 'tracking@myspeedex.net';
+  
+  $hostname = 'imap.gmail.com';
+  $username = 'tracking.speedex@gmail.com';
+  
   $password = 'connect123';
   $pod_path = $_SERVER['DOCUMENT_ROOT']."/sites/default/files/pod/";
  
@@ -78,7 +83,6 @@ function fetch_email(){
     number should be registered with speedex to avoid spam
     message should come from a phone by checking the FROM field only contains number
     
-    
   SUBJECT
     has WAYBILL NUMBER and RECIPIENT separated by "-" (dash)
     WAYBILL number must exist on the database
@@ -91,6 +95,18 @@ add facility to handle erroneous mails
 
 */
 
+
+
+/**
+  TODO: 
+    restrict updating of waybill if it already has POD attached
+    SMS reply to user about the status of the update
+    
+    validate sender
+    validate waybill
+    validate subject
+
+*/
 function email_fetcher_validate($email){
 
   if(!empty($email)){
@@ -104,10 +120,13 @@ function email_fetcher_validate($email){
     list($number,$domain) = split("@",$email['header']['sender']);
     $valid_number = preg_match("/[0-9]/",trim($number));
     
-    list($waybill,$recipient) = split("-",$email['header']['subject']);
+    //temporarily set to true to accept any email
+    $valid_number = true;
+    
+    list($waybill,$recipient) = preg_split("/\s/",$email['header']['subject'],2);
     $valid_waybill = true ; //_verify_waybill((int)$waybill);
     
-    //TODO : check date compatibility
+   
     $date = strtotime($email['header']['date']);
     
     $has_attachment = array_key_exists('attachments',$email);
