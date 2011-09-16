@@ -123,7 +123,8 @@ function email_fetcher_validate($email){
     //temporarily set to true to accept any email
     $valid_number = true;
     
-    list($waybill,$recipient) = preg_split("/\s/",$email['header']['subject'],2);
+    //list($waybill,$recipient) = preg_split("/\s/",$email['header']['subject'],2);
+    list($waybill,$recipient) = split("-",$email['header']['subject']);
     $valid_waybill = true ; //_verify_waybill((int)$waybill);
     
    
