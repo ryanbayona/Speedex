@@ -68,7 +68,7 @@ function fetch_email(){
                 (waybill,status,updated_on,remarks,medium,uid) VALUES (%d,'%s',%d,'%s','m',1)", 
                 $e['waybill'],"RECEIVED",$e['date'],!empty($e['recipient']) ? "Received by : ".$e['recipient'] : "Recipient not specified"
             );
-            db_query("INSERT INTO {tracking_reply} (number,message) VALUES ('%s',%d)",$e['number'],"Confirmation : POD for waybill #".$e['waybill']." successfully uploaded.");
+//             db_query("INSERT INTO {tracking_reply} (number,message) VALUES ('%s',%d)",$e['number'],"Confirmation : POD for waybill #".$e['waybill']." successfully uploaded.");
             $imap->saveAttachment($message_id,$email['attachments'][0]['part'],$pod_path.$e['waybill']);
           }
         }

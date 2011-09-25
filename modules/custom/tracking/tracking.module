@@ -198,7 +198,7 @@ function tracking_sms(){
       }else if(!$valid_txn_code){
         $response['message'] = "Invalid transaction code! Code should be INQUIRE for inquiries and UPDATE for waybill updates";  
       }
-      db_query("INSERT INTO {tracking_reply} (number,message) VALUES ('%s','%s')",$response['number'],$response['message']);
+//       db_query("INSERT INTO {tracking_reply} (number,message) VALUES ('%s','%s')",$response['number'],$response['message']);
       
       echo json_encode($response);
   }
