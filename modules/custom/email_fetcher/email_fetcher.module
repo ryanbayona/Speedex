@@ -54,19 +54,23 @@ function fetch_email(){
       foreach($unseen as $k=>$message_id){
         $email = $imap->returnEmailMessageArr($message_id);
         $e = email_fetcher_validate($email);
-        
-        if($e){
-          
-          //valid details, so add records to the tracking table
-          //this should be on the tracking module!                    
+        if(has_pod($e['waybill'])){
+            db_query("INSERT INTO {tracking_reply} (number,message) VALUES ('%s',%d)",$e['number'],
+            "Failure notification : POD for waybill #".$e['waybill']." already exists. Your POD image is not uploaded.");
+        }else{
+          if($e){
+            
+            //valid details, so add records to the tracking table
+            //this should be on the tracking module!                    
 
-          db_query("
-              INSERT INTO {tracking_status} 
-              (waybill,status,updated_on,remarks,medium,uid) VALUES (%d,'%s',%d,'%s','m',1)", 
-              $e['waybill'],"RECEIVED",$e['date'],!empty($e['recipient']) ? "Received by : ".$e['recipient'] : "Recipient not specified"
-          );
-          
-          $imap->saveAttachment($message_id,$email['attachments'][0]['part'],$pod_path.$e['waybill']);
+            db_query("
+                INSERT INTO {tracking_status} 
+                (waybill,status,updated_on,remarks,medium,uid) VALUES (%d,'%s',%d,'%s','m',1)", 
+                $e['waybill'],"RECEIVED",$e['date'],!empty($e['recipient']) ? "Received by : ".$e['recipient'] : "Recipient not specified"
+            );
+            db_query("INSERT INTO {tracking_reply} (number,message) VALUES ('%s',%d)",$e['number'],"Confirmation : POD for waybill #".$e['waybill']." successfully uploaded.");
+            $imap->saveAttachment($message_id,$email['attachments'][0]['part'],$pod_path.$e['waybill']);
+          }
         }
       }
         
@@ -123,8 +127,8 @@ function email_fetcher_validate($email){
     //temporarily set to true to accept any email
     $valid_number = true;
     
-    //list($waybill,$recipient) = preg_split("/\s/",$email['header']['subject'],2);
-    list($waybill,$recipient) = split("-",$email['header']['subject']);
+    
+    list($waybill,$recipient) = preg_split("/\s/",$email['header']['subject'],2);
     $valid_waybill = true ; //_verify_waybill((int)$waybill);
     
    
@@ -134,7 +138,7 @@ function email_fetcher_validate($email){
     
     if($valid_number && $valid_waybill && $has_attachment){
       return array(
-        'number'  => $number,
+        'number'  => "+".$number,
         'recipient' => trim($recipient),
         'waybill' => trim($waybill),
         'date'   => $date
@@ -146,5 +150,9 @@ function email_fetcher_validate($email){
   }
   return false;
 }
-
+function has_pod($waybill = false){
+  if($waybill){
+     return file_exists("sites/default/files/pod/{$waybill}.jpg");
+  }
+}
 

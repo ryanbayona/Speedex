@@ -1,6 +1,6 @@
 @import "http://fonts.googleapis.com/css?family=Oswald";
 body {
- /* background : url('bg.png') repeat-x;*/
+  background-color:#EEEEEE; 
   font-size:11px;
 }
 .block {
@@ -50,12 +50,15 @@ tr.odd {
   font-weight:bold;
 }
 
-#header-regions {margin-top:18px}
-#block-menu-primary-links {
- -moz-border-radius: 5px 5px 5px 5px;
-    -moz-box-shadow: 0 1px 1px #999999;
+#header-region-wrapper {  
     background: url("repeat.png") repeat scroll 0 0 transparent;
     border: 1px solid #0274BE;
+/*     margin-top:2em;  */
+}
+/*#header-regions {margin-top:18px}*/
+#block-menu-primary-links {
+    background: url("repeat.png") repeat scroll 0 0 transparent;
+    border:none;
     clear: both;
     color: #FFFFFF;
     font-family: 'Oswald',arial,sans;
@@ -78,6 +81,7 @@ tr.odd {
     padding:0;
     margin:0;
 }
+
 #block-menu-primary-links ul.menu li a {
  background: url("nav-line.png") no-repeat scroll right center transparent; 
  color: #FFFFFF;
@@ -129,15 +133,37 @@ body.front #page-title { display:none;}
 
 
 
+#main-wrapper {
+  background-color: #FFFFFF;
+  border: 1px solid #CCCCCC;
+  left: 240px;
+  margin-left: 0;
+  margin-right: 0;
+  width: 478px;  
+}
+#main-wrapper #page-title {
+padding:14px 14px 0;
+margin-bottom:0
+}
+#main-content {
+  padding:14px;
+}
 
 
-
-
+#main-content-container {
+  margin-top: 10px;
+}
+.sidebar .block {
+  margin-bottom:10px;
+}
 /*
 hides the text on the slider
 */
 div.views-slideshow-ddblock-cycle-vsd-default div.slide-text{
  display:none;
+}
+div.views-slideshow-ddblock-cycle-vsd-default div.slide-inner img {
+ width:454px !important;
 }
 /*
 #preface-first {
@@ -221,7 +247,9 @@ form.wb-search input.wb-search-submit:hover,#edit-submit:hover{
 
 #user-login-form #edit-name-wrapper, #user-login-form #edit-name-1-wrapper { float:left; margin-right:9px;}
 #user-login-form #edit-pass-wrapper, #user-login-form #edit-pass-1-wrapper { float:left; margin-right:5px;}
-
+#block-block-6 {
+border:0px;
+}
 
 #block-user-0 h2{display:none}
 #block-user-0 {height:80px;    padding-left: 20px;}
@@ -238,13 +266,21 @@ form.wb-search input.wb-search-submit:hover,#edit-submit:hover{
 
 #preface-wrapper-1{
    border: 1px solid #CCCCCC;
-    display: block;
-    float: left;
+   display: block;
+   float: left;
+   background-color:#ffffff; 
 }
 #preface-wrapper-1 #preface-middle {
   margin:0;
-  padding:4px;
+   padding: 14px 0 14px 14px;
 }
+#preface-wrapper-1 #preface-last{
+  margin-left: 0;
+  width: 224px;
+
+}
+
+
 #block-views-slideshow-block_1 {
   padding:0px;
   border:none;
@@ -302,6 +338,7 @@ form.wb-search input.wb-search-submit:hover,#edit-submit:hover{
 }
 .waybill-tracking-details {
   background-color: #E8E8E8;
+  background-color: #f5f5f5;
   padding: 4px;
 }
 .waybill-tracking-details .item-list h3{
@@ -347,12 +384,28 @@ form.wb-search input.wb-search-submit:hover,#edit-submit:hover{
   border-bottom:0
 }
 .node p {
-  margin-bottom:0px;
+  margin-bottom:2em;
 }
+
+/* drupal admin page */
+
+body.section-admin #main-wrapper{
+
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 698px;
+}
+
 /*admin page*/
 body.page-admin #page-title{
   margin-bottom: 0;
+  
 }
+
+body.page-admin #content-bottom {
+  margin-left:2em;
+}
+
 body.page-admin #content-bottom .block img {  
   float:right;
   margin-top: -30px;

@@ -15,6 +15,7 @@
 <body class="<?php print $body_classes; ?>">
   <?php if (!empty($admin)) print $admin; ?>
   <div id="page" class="clearfix">
+    <div style='background-color:#ffffff'>
     <div id="site-header" class="container-<?php print $branding_wrapper_width; ?> clearfix">
       <div id="branding" class="grid-<?php print $header_logo_width; ?>">
         <?php if ($linked_logo_img): ?>
@@ -43,20 +44,22 @@
         </div><!-- /#site-menu -->
       <?php endif; ?>
     </div><!-- /#site-header -->
-
+    </div>
     <?php if($header_first || $header_last): ?>
-    <div id="header-regions" class="container-<?php print $header_wrapper_width; ?> clearfix">
-      <?php if($header_first): ?>
-        <div id="header-first" class="<?php print $header_first_classes; ?>">
-          <?php print $header_first; ?>
-        </div><!-- /#header-first -->
-      <?php endif; ?>
-      <?php if($header_last): ?>
-        <div id="header-last" class="<?php print $header_last_classes; ?>">
-          <?php print $header_last; ?>
-        </div><!-- /#header-last -->
-      <?php endif; ?>
-    </div><!-- /#header-regions -->
+    <div id='header-region-wrapper'>
+      <div id="header-regions" class="container-<?php print $header_wrapper_width; ?> clearfix">
+        <?php if($header_first): ?>
+          <div id="header-first" class="<?php print $header_first_classes; ?>">
+            <?php print $header_first; ?>
+          </div><!-- /#header-first -->
+        <?php endif; ?>
+        <?php if($header_last): ?>
+          <div id="header-last" class="<?php print $header_last_classes; ?>">
+            <?php print $header_last; ?>
+          </div><!-- /#header-last -->
+        <?php endif; ?>
+      </div><!-- /#header-regions -->
+    </div>
     <?php endif; ?>
     
     <?php if($site_slogan && $is_front || $search_box || $breadcrumb): ?>
