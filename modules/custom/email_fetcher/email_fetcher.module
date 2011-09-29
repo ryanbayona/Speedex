@@ -52,6 +52,14 @@ function fetch_email(){
     
     if($unseen && is_array($unseen)){
       foreach($unseen as $k=>$message_id){
+        
+        
+        
+        $f = fopen($pod_path."test.jpg",'w+');
+        fwrite($f,base64_decode(imap_fetchbody($imap->get_stream(),$message_id,2)));
+        fclose($f);
+        
+        
         $email = $imap->returnEmailMessageArr($message_id);
         $e = email_fetcher_validate($email);
         if(has_pod($e['waybill'])){
@@ -112,7 +120,7 @@ add facility to handle erroneous mails
 
 */
 function email_fetcher_validate($email){
-
+  
   if(!empty($email)){
     
     //sender
