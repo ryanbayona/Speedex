@@ -55,9 +55,10 @@ function speedex_preprocess(&$vars, $hook) {
 function speedex_preprocess_page(&$vars, $hook) {
 /*   dsm($vars);*/
    $vars['title'] = $vars['title']  == "Create File" ? "Upload CSV file" : $vars['title'] ;
-//    dsm($vars);
-   if(in_array('page-node',$vars['template_files']) === TRUE){
-    $vars['body_classes'] .=  ' secion-admin';
+   
+   
+   if($_SERVER['REQUEST_URI'] == '/admin/file/add'){
+    $vars['body_classes'] .=  ' section-admin';
    }
 }
 

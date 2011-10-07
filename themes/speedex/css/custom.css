@@ -333,6 +333,9 @@ border:0px;
   color:#ffffff;
   
 }
+.waybill-tracking table thead tr th a {
+    color:#ffffff
+}
 .waybill-tracking table thead tr th,.waybill-tracking table tbody tr td {
   padding:6px;
 }
@@ -418,3 +421,7 @@ body.page-admin #content-bottom .block {
     width: 44%;
 }
 .pod {margin:1em 0}
+
+/* admin : tracking page */
+.view-display-id-page_1 .view-content  {overflow-x:auto;overflow-y:hidden}
+.view-display-id-page_1 .view-content  table {width:1000px;}

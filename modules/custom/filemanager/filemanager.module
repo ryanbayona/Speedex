@@ -232,10 +232,7 @@ function process_field(&$array,$orig_name,$new_name){
   }
 }
 function has($key,$array){
-   
    return array_key_exists($key,$array);
-   
-   
 }
 //converts given date to yyyy-mm-dd
 function todate($str){
