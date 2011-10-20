@@ -252,7 +252,7 @@ border:0px;
 }
 
 #block-user-0 h2{display:none}
-#block-user-0 {height:80px;    padding-left: 20px;}
+#block-user-0 {height:80px;    padding-left: 20px; border:none;}
 /* track block preface */
 #block-block-2 {
   border:none;
@@ -305,6 +305,42 @@ border:0px;
   font-weight:bold;
 }
 
+/* area-coverage */
+body.page-area-coverage #main-content {
+  padding:0; 
+}  
+
+#block-views-tracking_areas-block_2,
+#block-views-tracking_areas-block_3,
+#block-views-tracking_areas-block_4{
+  background:none;
+  border:none;
+}  
+
+#block-views-tracking_areas-block_2 h2,
+#block-views-tracking_areas-block_3 h2,
+#block-views-tracking_areas-block_4 h2 {
+    font-size: 26px;
+    margin-bottom: .5em;
+}    
+
+
+#block-views-tracking_areas-block_2 .views-table,
+#block-views-tracking_areas-block_3 .views-table,
+#block-views-tracking_areas-block_4 .views-table{
+  margin-bottom:3em;
+}  
+
+#block-views-tracking_areas-block_2 .views-table caption,
+#block-views-tracking_areas-block_3 .views-table caption,
+#block-views-tracking_areas-block_4 .views-table caption{
+  font-size: 1.4em;
+    font-weight: bold;
+    margin-bottom: 1em;
+    text-align: left;
+    color: #0274BE;
+    font-family: 'Oswald',arial,sans;
+}  
 
 /* waybill tracking page */
 .waybill-tracking {
@@ -363,12 +399,12 @@ border:0px;
   height:50px;
 }
 
-#block-block-14  h4{
+#block-block-14  h4,#block-block-17 h4{
   font-weight:normal;
   font-size:17px;
   margin-bottom:8px;
 }
-#block-block-14 .speedex-orange {
+#block-block-14 .speedex-orange ,#block-block-17 .speedex-orange{
   font-size : 10px;
 }
 
@@ -424,4 +460,4 @@ body.page-admin #content-bottom .block {
 
 /* admin : tracking page */
 .view-display-id-page_1 .view-content  {overflow-x:auto;overflow-y:hidden}
-.view-display-id-page_1 .view-content  table {width:1000px;}
+.view-tracking .view-content  table {width:1000px;}
