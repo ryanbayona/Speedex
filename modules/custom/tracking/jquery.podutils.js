@@ -1,11 +1,13 @@
 Drupal.behaviors.podUtils=function(){
-  //attaches image rotator to lightbox
-  var im = $("#imageData");
-  if(im.length > 0){
-    im.append("<a class='rotator' href='#'>Rotate</a>");
-    $(".rotator").click(function(){
-      $("#lightboxImage").rotate(45);
-    });
-  }
-  
+  $("#lightbox").unbind('click');
+  $(".rotator").click(function(){
+     var rotate = $(this).data('rotate');
+     if(rotate){
+       rotate += 90 ;
+     }else{
+       rotate = 90;
+     }
+     $("#lightboxImage").rotate(rotate);
+     $(this).data('rotate',rotate)
+  });  
 };

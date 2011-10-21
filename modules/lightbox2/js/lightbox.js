@@ -153,6 +153,7 @@ var Lightbox = {
     var zoomOut = '<a id="bottomNavZoomOut" href="#"></a>';
     var pause = '<a id="lightshowPause" title="' + Drupal.t('Pause Slideshow') + '" href="#" style="display: none;"></a>';
     var play = '<a id="lightshowPlay" title="' + Drupal.t('Play Slideshow') + '" href="#" style="display: none;"></a>';
+    var rotate = '<a id="lightshowRotate" title="Rotate" href="#" >Rotate</a>';
 
     $("body").append(output);
     $('#outerImageContainer').append(modal + frame + imageContainer + loading);
@@ -160,7 +161,7 @@ var Lightbox = {
       $('#imageContainer').append(image + hoverNav);
       $('#imageData').append(details + bottomNav);
       $('#imageDetails').append(caption + numberDisplay);
-      $('#bottomNav').append(frameNav + close + zoom + zoomOut + pause + play);
+      $('#bottomNav').append(frameNav + close + zoom + zoomOut + pause + play+rotate);
     }
     else {
       $('#outerImageContainer').append(bottomNav);
@@ -172,7 +173,8 @@ var Lightbox = {
 
     // Setup onclick handlers.
     if (Lightbox.disableCloseClick) {
-      $('#lightbox2-overlay').click(function() { Lightbox.end(); return false; } ).hide();
+      //$('#lightbox2-overlay').click(function() { Lightbox.end(); return false; } ).hide();
+      $('#lightbox').unbind('click') ;
     }
     $('#loadingLink, #bottomNavClose').click(function() { Lightbox.end('forceClose'); return false; } );
     $('#prevLink, #framePrevLink').click(function() { Lightbox.changeData(Lightbox.activeImage - 1); return false; } );
@@ -181,7 +183,17 @@ var Lightbox = {
     $('#bottomNavZoomOut').click(function() { Lightbox.changeData(Lightbox.activeImage, false); return false; } );
     $('#lightshowPause').click(function() { Lightbox.togglePlayPause("lightshowPause", "lightshowPlay"); return false; } );
     $('#lightshowPlay').click(function() { Lightbox.togglePlayPause("lightshowPlay", "lightshowPause"); return false; } );
-
+$('#lightshowRotate').click(function() { 
+      var rotate = $(this).data('rotate');
+      if(rotate){
+         rotate += 90 ;
+      }else{
+         rotate = 90;
+      }
+      $("#lightboxImage").rotate(rotate);
+      $(this).data('rotate',rotate)
+      return false; 
+    });
     // Fix positioning.
     $('#prevLink, #nextLink, #framePrevLink, #frameNextLink').css({ 'paddingTop': Lightbox.borderSize + 'px'});
     $('#imageContainer, #frameContainer, #modalContainer').css({ 'padding': Lightbox.borderSize + 'px'});
@@ -1186,5 +1198,6 @@ Drupal.behaviors.initLightbox = function (context) {
   // Attach lightbox to any links with lightbox rels.
   Lightbox.initList(context);
   $('#lightboxAutoModal', context).triggerHandler('click');
+//  $('#lightbox').unbind('click');
 };
 
