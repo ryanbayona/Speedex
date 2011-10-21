@@ -56,16 +56,16 @@ function tracker(){
     //question : are awb and sr always unique?
     //sr is sometimes null - where to get data
     //equivalent field of client?
-
+    $gmf = $ro = $rnss = $sr= $waybills;
     $waybill_records = db_query("
       SELECT distinct awb,sr,consignee,recvd_by FROM tracking 
       WHERE 
       awb  IN (". db_placeholders($waybills,'varchar') .") OR
-      GMF  IN (". db_placeholders($waybills,'varchar') .") OR
-      RO   IN (". db_placeholders($waybills,'varchar') .") OR
-      RNSS IN (". db_placeholders($waybills,'varchar') .") OR
-      SR   IN (". db_placeholders($waybills,'varchar') .") OR      
-      ",$waybills,$waybills,$waybills,$waybills,$waybills);
+      GMF  IN (". db_placeholders($gmf,'varchar') .") OR
+      RO   IN (". db_placeholders($ro,'varchar') .") OR
+      RNSS IN (". db_placeholders($rnss,'varchar') .") OR
+      SR   IN (". db_placeholders($sr,'varchar') .") OR      
+      ",$waybills,$gmf,$ro,$rnss,$sr);
     
       
       $output = "";
