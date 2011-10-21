@@ -65,7 +65,7 @@ function tracker(){
       GMF  IN ('%s') OR
       RO   IN ('%s') OR
       RNSS IN ('%s') OR
-      SR   IN ('%s') OR      
+      SR   IN ('%s') 
       ",$aw,$gmf,$ro,$rnss,$sr);
     
       
