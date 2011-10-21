@@ -15,8 +15,8 @@
 <body class="<?php print $body_classes; ?>">
   <?php if (!empty($admin)) print $admin; ?>
   <div id="page" class="clearfix">
-    <div id="main-content-container" class="container-<?php print $content_container_width; ?> clearfix">
-      <div id="main-wrapper" class="column <?php print $main_content_classes; ?>">
+    <div id="main-content-container" class="clearfix">
+      <div id="main-wrapper">
         <?php if (!empty($mission)) {
           print $mission;
         }?>
@@ -29,11 +29,7 @@
           <div id="content-tabs" class=""><?php print $tabs; ?></div><!-- /#content-tabs -->
         <?php endif; ?>
     
-        <?php if ($title): ?>
-          <h1 class="title" id="page-title"><?php print $title; ?></h1>
-        <?php endif; ?>
-    
-        <div id="main-content" class="region clearfix">
+        <div id="main-content" class="clearfix">
           <?php print $content; ?>
         </div><!-- /#main-content -->
         
