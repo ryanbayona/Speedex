@@ -461,3 +461,10 @@ body.page-admin #content-bottom .block {
 /* admin : tracking page */
 .view-display-id-page_1 .view-content  {overflow-x:auto;overflow-y:hidden}
 .view-tracking .view-content  table {width:1000px;}
+
+
+body.page-admin-tracking-full-screen  #main-wrapper ,
+body.page-admin-tracking-full-screen .view-tracking .view-content table 
+{
+  width:100%;
+}
