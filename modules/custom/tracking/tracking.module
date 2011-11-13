@@ -36,9 +36,36 @@ function tracking_menu(){
     'access arguments'=> array('access content'),                                                                                                                                   
     'type'            => MENU_CALLBACK                                                                                                                                              
                                                                                                                                                                                     
-  );                                                                                                                                                                                
+  );         
+  $items['request/approve/%']=array(                                                                                                                                                      
+    'title'           => t('Approve request'),                                                                                                                                  
+    'page callback'   => 'approve_request',
+    'page arguments'  => array(2),                                                                                                                                            
+    'access arguments'=> array('access content'),                                                                                                                                   
+    'type'            => MENU_CALLBACK                                                                                                                                              
+                                                                                                                                                                                    
+  );   
+       
+  $items['request/reject/%']=array(                                                                                                                                                      
+    'title'           => t('Approve request'),                                                                                                                                  
+    'page callback'   => 'reject_request',
+    'page arguments'  => array(2),                                                                                                                                            
+    'access arguments'=> array('access content'),                                                                                                                                   
+    'type'            => MENU_CALLBACK                                                                                                                                              
+                                                                                                                                                                                    
+  );         
+                                                                                                                                                                         
   return $items;                                                                                                                                                                    
-}                                                                                                                                                                                   
+}                       
+function reject_request($nid= false){
+  $node = node_load(array('nid'=>$nid));
+  print_r($node);
+}                                                                                                                                                            
+//approves client request using the link provided in the email
+function approve_request($nid = false){
+  $node = node_load(array('nid'=>$nid));
+  print_r($node);
+}
 
 //displays the new layout for tracking page
 function tracker(){
@@ -61,12 +88,12 @@ function tracker(){
     $waybill_records = db_query("
       SELECT distinct awb,sr,consignee,recvd_by FROM tracking 
       WHERE 
-      awb  IN ('%s') OR
-      GMF  IN ('%s') OR
-      RO   IN ('%s') OR
-      RNSS IN ('%s') OR
-      SR   IN ('%s') 
-      ",$aw,$gmf,$ro,$rnss,$sr);
+      awb  IN ({$aw}) OR
+      GMF  IN ({$aw}) OR
+      RO   IN ({$aw}) OR
+      RNSS IN ({$aw}) OR
+      SR   IN ({$aw}) 
+      ");
     
       
       $output = "";
@@ -159,7 +186,13 @@ function _build_waybill_details($wr){
       $str .= "</div>";
    }
   
-  $str .= "</div>";  
+//  $str .= "</div>";  
+   /*ob_start();
+   include("http://112.202.133.126/getter.php?waybill={$wr->awb}");
+   $cc= ob_get_clean();
+   $str .= $cc;*/
+$str .= "</div>";
+
   return $str;
 }
 
